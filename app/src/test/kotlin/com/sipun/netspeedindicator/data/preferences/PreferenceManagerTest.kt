@@ -45,6 +45,23 @@ class PreferenceManagerTest {
     }
 
     @Test
+    fun `accent defaults to 0 and persists`() = runTest {
+        assertEquals(0, preferenceManager.accent.first())
+        preferenceManager.setAccent(3)
+        assertEquals(3, preferenceManager.accent.first())
+    }
+
+    @Test
+    fun `usage alert defaults persist`() = runTest {
+        assertFalse(preferenceManager.usageAlertEnabled.first())
+        assertEquals(1024, preferenceManager.usageAlertBudgetMb.first())
+        preferenceManager.setUsageAlertEnabled(true)
+        preferenceManager.setUsageAlertBudgetMb(2048)
+        assertTrue(preferenceManager.usageAlertEnabled.first())
+        assertEquals(2048, preferenceManager.usageAlertBudgetMb.first())
+    }
+
+    @Test
     fun `onboardingSeen defaults to false`() = runTest {
         assertFalse(preferenceManager.onboardingSeen.first())
     }
