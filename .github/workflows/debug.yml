@@ -59,7 +59,7 @@ jobs:
         run: python3 .github/scripts/debug.py build
 
       - name: Compile androidTest sources
-        run: ./gradlew assembleDebugAndroidTest --stacktrace
+        run: ./gradlew compileDebugAndroidTestKotlin --stacktrace
 
       - name: Notify Gradle done
         continue-on-error: true
