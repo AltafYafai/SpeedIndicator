@@ -77,6 +77,8 @@ class SettingsViewModel @Inject constructor(
 
             is SettingsUiEvent.OnAccentChanged -> viewModelScope.launch {
                 preferenceManager.setAccent(event.accent)
+                // Monochrome/accent dynamicColor is driven by the accent picker: 0 = dynamic.
+                preferenceManager.setDynamicColor(event.accent == 0)
             }
 
             is SettingsUiEvent.OnUsageAlertChanged -> viewModelScope.launch {

@@ -63,6 +63,8 @@ import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -142,6 +144,11 @@ private fun SettingsScreenContent(
 ) {
     val systemDarkTheme = isSystemInDarkTheme()
     val darkThemeEnabled = uiState.appTheme == 2 || (uiState.appTheme == 0 && systemDarkTheme)
+    val selectedAccent = when {
+        uiState.accent > 0 -> uiState.accent
+        uiState.dynamicColor -> 0
+        else -> 1
+    }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showAccentDialog by remember { mutableStateOf(false) }
     var showBudgetDialog by remember { mutableStateOf(false) }
@@ -248,7 +255,7 @@ private fun SettingsScreenContent(
                     { showAccentDialog = true }
                 ) {
                     TrailingValue(
-                        stringResource(accentLabelRes(uiState.accent)),
+                        stringResource(accentLabelRes(selectedAccent)),
                         true
                     )
                 }
@@ -566,8 +573,14 @@ private fun SettingsScreenContent(
         }
 
         if (showAccentDialog) {
+            val systemAccentColor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (darkThemeEnabled) dynamicDarkColorScheme(context).primary
+                else dynamicLightColorScheme(context).primary
+            } else {
+                MaterialTheme.colorScheme.primary
+            }
             val accentOptions = listOf(
-                Triple(0, R.string.accent_dynamic, null as Color?),
+                Triple(0, R.string.accent_dynamic, systemAccentColor),
                 Triple(1, R.string.accent_blue, Color(0xFF2563EB)),
                 Triple(2, R.string.accent_emerald, Color(0xFF059669)),
                 Triple(3, R.string.accent_violet, Color(0xFF7C3AED)),
@@ -602,7 +615,7 @@ private fun SettingsScreenContent(
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
                         accentOptions.forEach { (accent, label, swatch) ->
-                            val selected = uiState.accent == accent
+                            val selected = selectedAccent == accent
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
