@@ -58,6 +58,9 @@ jobs:
       - name: Build debug APK
         run: python3 .github/scripts/debug.py build
 
+      - name: Compile androidTest sources
+        run: ./gradlew assembleDebugAndroidTest --stacktrace
+
       - name: Notify Gradle done
         continue-on-error: true
         run: python3 .github/scripts/telegram_bot.py stage done gradle "Gradle assembleDebug done"
