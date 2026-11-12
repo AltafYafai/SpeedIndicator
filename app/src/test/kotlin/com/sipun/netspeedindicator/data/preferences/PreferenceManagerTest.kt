@@ -45,6 +45,17 @@ class PreferenceManagerTest {
     }
 
     @Test
+    fun `onboardingSeen defaults to false`() = runTest {
+        assertFalse(preferenceManager.onboardingSeen.first())
+    }
+
+    @Test
+    fun `setOnboardingSeen persists and emits`() = runTest {
+        preferenceManager.setOnboardingSeen(true)
+        assertTrue(preferenceManager.onboardingSeen.first())
+    }
+
+    @Test
     fun `monitoringEnabled survives manager recreation`() = runTest {
         preferenceManager.setMonitoringEnabled(false)
         // Simulate a cold start: a new manager must observe the persisted flag
