@@ -65,6 +65,14 @@ android {
             if (!debugKeystore.isNullOrBlank()) {
                 signingConfig = signingConfigs.getByName("ciDebug")
             }
+            // Shrink like the release build so per-push debug APKs fit under
+            // Telegram's 50 MB Bot API upload ceiling.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
 
         release {
