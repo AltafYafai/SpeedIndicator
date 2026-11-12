@@ -17,9 +17,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Notify build started
+        continue-on-error: true
+        run: python3 .github/scripts/telegram_bot.py start
 
       - name: Set up JDK 17
         uses: actions/setup-java@v6
@@ -30,10 +38,27 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Notify environment ready
+        continue-on-error: true
+        run: python3 .github/scripts/telegram_bot.py stage done env "Environment ready (JDK 17, Gradle)"
+
       - name: Run unit tests
         run: |
           chmod +x ./gradlew
           ./gradlew testDebugUnitTest --stacktrace
 
+      - name: Notify tests passed
+        continue-on-error: true
+        run: python3 .github/scripts/telegram_bot.py stage done tests "Unit tests passed"
+
       - name: Assemble debug APK
         run: ./gradlew assembleDebug --stacktrace
+
+      - name: Notify assembly done
+        continue-on-error: true
+        run: python3 .github/scripts/telegram_bot.py stage done assemble "Debug APK assembled"
+
+      - name: Notify Telegram result
+        if: always()
+        continue-on-error: true
+        run: python3 .github/scripts/telegram_bot.py result "${{ job.status }}"

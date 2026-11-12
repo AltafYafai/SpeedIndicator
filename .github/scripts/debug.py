@@ -71,7 +71,7 @@ def send():
         raise SystemExit(f"Packaged debug APK is missing: {target}")
 
     subprocess.run(
-        [sys.executable, ".github/scripts/telegram.py", str(target)],
+        [sys.executable, ".github/scripts/telegram_bot.py", "apk", str(target)],
         check=True,
         env=os.environ.copy(),
     )
