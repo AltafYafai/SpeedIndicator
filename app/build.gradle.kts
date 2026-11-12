@@ -56,6 +56,16 @@ android {
             if (!keystorePassword.isNullOrBlank()) storePassword = keystorePassword
             if (!keyAliasValue.isNullOrBlank()) keyAlias = keyAliasValue
             if (!keyPasswordValue.isNullOrBlank()) keyPassword = keyPasswordValue
+
+            if (keystorePath.isNullOrBlank()) {
+                // Fork fallback: no dedicated release keystore is configured, so sign
+                // releases with the standard (CI-cached) debug keystore. This keeps
+                // Telegram-distributed fork builds updating in place seamlessly.
+                storeFile = rootProject.file(System.getProperty("user.home") + "/.android/debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
         }
     }
 

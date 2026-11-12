@@ -30,24 +30,18 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Decode release keystore
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: |
-          set -euo pipefail
-          test -n "$ANDROID_KEYSTORE_BASE64" || {
-            echo "Missing ANDROID_KEYSTORE_BASE64 secret"
-            exit 1
-          }
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/speedindicator-release.jks"
-          chmod 600 "$RUNNER_TEMP/speedindicator-release.jks"
+      - name: Restore debug signing key
+        uses: actions/cache@v6
+        with:
+          path: ~/.android/debug.keystore
+          key: speedindicator-debug-keystore-v1
 
       - name: Validate release version
         run: python3 .github/scripts/release.py validate "${{ inputs.version }}"
 
       - name: Build release APK
         env:
-          ANDROID_KEYSTORE_FILE: ${{ runner.temp }}/speedindicator-release.jks
+          ANDROID_KEYSTORE_FILE: ${{ secrets.ANDROID_KEYSTORE_FILE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -76,7 +70,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          RELEASE_CHAT_ID: ${{ secrets.RELEASE_CHAT_ID }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python3 .github/scripts/release.py telegram
 
 # release registration marker: 2026-11-12

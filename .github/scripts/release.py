@@ -246,11 +246,11 @@ def multipart(fields, file_field, filename, content, content_type):
 def telegram():
     version, tag, _ = version_info()
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
-    chat_id = os.environ.get("RELEASE_CHAT_ID")
+    chat_id = os.environ.get("RELEASE_CHAT_ID") or os.environ.get("TELEGRAM_CHAT_ID")
     if not token:
         raise SystemExit("TELEGRAM_BOT_TOKEN is missing.")
     if not chat_id:
-        raise SystemExit("RELEASE_CHAT_ID is missing.")
+        raise SystemExit("RELEASE_CHAT_ID (or TELEGRAM_CHAT_ID) is missing.")
 
     target = apk_path()
     if not target.is_file() or not os.access(target, os.R_OK):
