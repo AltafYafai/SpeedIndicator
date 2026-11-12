@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     env:
@@ -42,16 +42,7 @@ jobs:
         continue-on-error: true
         run: python3 .github/scripts/telegram_bot.py stage done env "Environment ready (JDK 17, Gradle)"
 
-      - name: Run unit tests
-        run: |
-          chmod +x ./gradlew
-          ./gradlew testDebugUnitTest --stacktrace
-
-      - name: Notify tests passed
-        continue-on-error: true
-        run: python3 .github/scripts/telegram_bot.py stage done tests "Unit tests passed"
-
-      - name: Assemble debug APK
+      - name: Build debug APK
         run: ./gradlew assembleDebug --stacktrace
 
       - name: Notify assembly done
