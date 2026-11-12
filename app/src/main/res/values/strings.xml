@@ -119,4 +119,8 @@
     <string name="tile_label">Net Speed</string>
     <string name="tile_monitoring_off">Monitoring off</string>
     <string name="tile_monitoring_waiting">Waiting for data…</string>
+    <string name="session_speed">Session Speed</string>
+    <string name="session_speed_max">Max %1$s</string>
+    <string name="pause_monitoring">Pause monitoring</string>
+    <string name="apk_fingerprint">APK SHA-256 fingerprint</string>
 </resources>
