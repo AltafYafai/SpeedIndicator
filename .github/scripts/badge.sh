@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-releases_url="https://api.github.com/repos/Darkstar085/SpeedIndicator/releases"
+releases_url="https://api.github.com/repos/AltafYafai/SpeedIndicator/releases"
 response_file="$(mktemp)"
 trap 'rm -f "$response_file"' EXIT
 

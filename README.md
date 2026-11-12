@@ -11,9 +11,9 @@
   <img src="https://img.shields.io/badge/Kotlin-2.4.10-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin">
   <img src="https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Jetpack Compose">
   <br>
-  <img src="https://img.shields.io/github/v/release/Darkstar085/SpeedIndicator?style=for-the-badge&label=Latest%20Release" alt="Latest release">
-  <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Darkstar085-dev/SpeedIndicator/main/.github/badges/downloads.json&style=for-the-badge&label=APK%20Downloads" alt="APK downloads">
-  <a href="https://github.com/Darkstar085/SpeedIndicator/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/Darkstar085/SpeedIndicator/release.yml?style=for-the-badge&label=Build" alt="Build status"></a>
+  <img src="https://img.shields.io/github/v/release/AltafYafai/SpeedIndicator?style=for-the-badge&label=Latest%20Release" alt="Latest release">
+  <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/AltafYafai/SpeedIndicator/main/.github/badges/downloads.json&style=for-the-badge&label=APK%20Downloads" alt="APK downloads">
+  <a href="https://github.com/AltafYafai/SpeedIndicator/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/AltafYafai/SpeedIndicator/release.yml?style=for-the-badge&label=Build" alt="Build status"></a>
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="MIT License">
 </p>
 
@@ -153,7 +153,7 @@ data, domain, and UI packages.
 ### Clone
 
 ```bash
-git clone https://github.com/Darkstar085/SpeedIndicator.git
+git clone https://github.com/AltafYafai/SpeedIndicator.git
 cd SpeedIndicator
 ```
 
@@ -168,8 +168,8 @@ The generated debug APK is available under `app/build/outputs/apk/debug/`.
 ## 📦 Releases
 
 Download the latest APK from
-the [latest release](https://github.com/Darkstar085/SpeedIndicator/releases/latest), or browse all
-available builds on the [Releases](https://github.com/Darkstar085/SpeedIndicator/releases) page.
+the [latest release](https://github.com/AltafYafai/SpeedIndicator/releases/latest), or browse all
+available builds on the [Releases](https://github.com/AltafYafai/SpeedIndicator/releases) page.
 
 ## 🔐 Permissions
 

@@ -84,7 +84,7 @@ object UpdateManager {
     const val ACTION_SHOW_UPDATE = "com.sipun.netspeedindicator.SHOW_UPDATE"
     const val ACTION_INSTALL_UPDATE = "com.sipun.netspeedindicator.INSTALL_UPDATE"
 
-    private const val REPOSITORY = "Darkstar085/SpeedIndicator"
+    private const val REPOSITORY = "AltafYafai/SpeedIndicator"
     private const val API_BASE = "https://api.github.com/repos/" + REPOSITORY
     private const val LATEST_API_URL = API_BASE + "/releases/latest"
     private const val MANIFEST_URL =

@@ -340,7 +340,7 @@ private fun SettingsScreenContent(
                         context.startActivity(
                             Intent(
                                 Intent.ACTION_VIEW,
-                                Uri.parse("https://github.com/Darkstar085/SpeedIndicator")
+                                Uri.parse("https://github.com/AltafYafai/SpeedIndicator")
                             )
                         )
                     }
