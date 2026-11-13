@@ -25,11 +25,15 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,7 +51,9 @@ import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -55,7 +61,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -79,6 +87,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sipun.netspeedindicator.R
@@ -89,6 +99,7 @@ import com.sipun.netspeedindicator.domain.model.UsageInfo
 import com.sipun.netspeedindicator.ui.components.AppTopBar
 import com.sipun.netspeedindicator.ui.components.StopMonitoringDialog
 import com.sipun.netspeedindicator.ui.navigation.MainRoute
+import com.sipun.netspeedindicator.ui.theme.AppDialogTheme
 import com.sipun.netspeedindicator.ui.theme.NetSpeedIndicatorTheme
 import com.sipun.netspeedindicator.ui.theme.OutfitFontFamily
 import com.sipun.netspeedindicator.ui.theme.dimens
@@ -165,7 +176,6 @@ private fun HomeScreenContent(uiState: HomeUiState, onEvent: (HomeUiEvent) -> Un
                     ActiveAppsCard(
                         isServiceRunning = uiState.isServiceRunning,
                         apps = uiState.activeApps,
-                        activeCount = uiState.activeAppCount,
                         onStartMonitoring = { onEvent(HomeUiEvent.OnStopClick) }
                     )
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1057,14 +1067,16 @@ private fun UsageBreakdownCard(
     }
 }
 
+private const val MAX_VISIBLE_ACTIVE_APPS = 4
+
 @Composable
 private fun ActiveAppsCard(
     isServiceRunning: Boolean,
     apps: List<LiveAppRate>,
-    activeCount: Int,
     onStartMonitoring: () -> Unit
 ) {
     val navController = LocalNavController.current
+    val showAllDialog = remember { mutableStateOf(false) }
     val isDark = MaterialTheme.colorScheme.surface.red < 0.5f
     val cardFill = if (isDark) {
         Brush.verticalGradient(
@@ -1124,7 +1136,7 @@ private fun ActiveAppsCard(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-            if (isServiceRunning && activeCount > 0) {
+            if (isServiceRunning && apps.isNotEmpty()) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
@@ -1132,7 +1144,7 @@ private fun ActiveAppsCard(
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        stringResource(R.string.active_apps_pill, activeCount),
+                        stringResource(R.string.active_apps_pill, apps.size),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.8.sp,
@@ -1146,17 +1158,38 @@ private fun ActiveAppsCard(
             !isServiceRunning -> MonitoringOffRow(onStartMonitoring)
             apps.isEmpty() -> NoActiveAppsRow()
             else -> {
-                val maxRate = apps.maxOf { it.bytesPerSecond }.coerceAtLeast(1L)
-                apps.forEach { app ->
+                val shown = apps.take(MAX_VISIBLE_ACTIVE_APPS)
+                val maxRate = shown.maxOf { it.bytesPerSecond }.coerceAtLeast(1L)
+                shown.forEach { app ->
                     ActiveAppRow(app = app, maxRate = maxRate)
                 }
-                if (activeCount > apps.size) {
-                    Text(
-                        stringResource(R.string.plus_more_apps, activeCount - apps.size),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                if (apps.size > shown.size) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable { showAllDialog.value = true }
+                            .padding(horizontal = 4.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            stringResource(R.string.plus_more_apps, apps.size - shown.size),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            stringResource(R.string.show_all),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.4.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                if (showAllDialog.value) {
+                    ActiveAppsDialog(apps = apps, onDismiss = { showAllDialog.value = false })
                 }
                 Row(
                     modifier = Modifier
@@ -1181,6 +1214,83 @@ private fun ActiveAppsCard(
                         letterSpacing = 0.4.sp,
                         color = MaterialTheme.colorScheme.primary
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActiveAppsDialog(apps: List<LiveAppRate>, onDismiss: () -> Unit) {
+    val maxRate = apps.maxOf { it.bytesPerSecond }.coerceAtLeast(1L)
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        AppDialogTheme {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .heightIn(max = 560.dp)
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 0.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 18.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            stringResource(R.string.active_apps_dialog_title),
+                            fontFamily = OutfitFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                stringResource(R.string.active_apps_pill, apps.size),
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.8.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    LazyColumn(
+                        modifier = Modifier.weight(1f, fill = false),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(
+                            items = apps,
+                            key = { app -> app.uid }
+                        ) { app ->
+                            ActiveAppRow(app = app, maxRate = maxRate)
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Row(Modifier.fillMaxWidth(), Arrangement.End) {
+                        TextButton(onClick = onDismiss) {
+                            Text(
+                                stringResource(R.string.close),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -1356,9 +1466,11 @@ fun HomeScreenPreview() {
                 activeApps = listOf(
                     LiveAppRate(1001, "com.android.chrome", "Chrome", 2_400_000L),
                     LiveAppRate(1002, "com.example.video", "Streamly", 950_000L),
-                    LiveAppRate(1003, "com.example.chat", "Messages", 12_000L)
-                ),
-                activeAppCount = 5
+                    LiveAppRate(1003, "com.example.chat", "Messages", 12_000L),
+                    LiveAppRate(1004, "com.example.music", "Music", 6_000L),
+                    LiveAppRate(1005, "com.example.mail", "Mail", 3_000L),
+                    LiveAppRate(1006, "com.example.news", "News", 1_500L)
+                )
             ),
             onEvent = {}
         )
