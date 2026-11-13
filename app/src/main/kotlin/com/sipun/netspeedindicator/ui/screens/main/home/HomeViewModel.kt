@@ -50,14 +50,13 @@ class HomeViewModel @Inject constructor(
     private val _showStopDialog = MutableStateFlow(false)
     private val _speedHistory = MutableStateFlow<List<Long>>(emptyList())
 
-    /** Live per-app rates, resolved against cached launcher app info, sorted desc. */
+    /** Live per-app rates, resolved against installed package info, sorted desc. */
     private val activeApps = trafficStateManager.appLiveRates
         .map { rates ->
-            val infos = installedAppsProvider.launcherApps()
             val sorted = rates
                 .filterValues { it > 0L }
                 .mapNotNull { (uid, rate) ->
-                    infos[uid]?.let { info ->
+                    installedAppsProvider.appInfoForUid(uid)?.let { info ->
                         LiveAppRate(uid, info.packageName, info.appName, rate)
                     }
                 }
