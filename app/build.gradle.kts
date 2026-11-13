@@ -24,8 +24,8 @@ android {
         applicationId = "com.sipun.netspeedindicator"
         minSdk = 28
         targetSdk = 37
-        versionCode = 13
-        versionName = "4.9"
+        versionCode = 14
+        versionName = "4.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
