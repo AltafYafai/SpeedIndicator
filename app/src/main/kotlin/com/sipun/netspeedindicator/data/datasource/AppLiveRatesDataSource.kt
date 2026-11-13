@@ -9,6 +9,8 @@ import android.os.SystemClock
 import android.util.Log
 import com.sipun.netspeedindicator.core.state.TrafficStateManager
 import com.sipun.netspeedindicator.core.util.PermissionUtils
+import com.sipun.netspeedindicator.domain.model.LiveRatesDiagnostics
+import com.sipun.netspeedindicator.domain.model.LiveRatesStrategy
 import com.sipun.netspeedindicator.domain.repository.InstalledAppsProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -63,6 +65,9 @@ class AppLiveRatesDataSource @Inject constructor(
     @Volatile
     private var uidCountersCheckedAt = 0L
 
+    @Volatile
+    private var activeMode = MODE_LAUNCHER
+
     private var job: Job? = null
 
     fun start(scope: CoroutineScope) {
@@ -77,8 +82,8 @@ class AppLiveRatesDataSource @Inject constructor(
 
                 val allUids = allTrafficUids()
                 val newMode = when {
-                    uidCountersSupported(allUids) -> MODE_UID_COUNTERS
                     hasNetworkStatsAccess() -> MODE_NETWORK_STATS
+                    uidCountersSupported(allUids) -> MODE_UID_COUNTERS
                     else -> MODE_LAUNCHER
                 }
                 if (newMode != mode) {
@@ -88,6 +93,7 @@ class AppLiveRatesDataSource @Inject constructor(
                     lastTimestamp = SystemClock.elapsedRealtime()
                     mode = newMode
                 }
+                activeMode = mode
 
                 val rates = if (hasNetworkStatsAccess() && mode == MODE_NETWORK_STATS) {
                     lastTimestamp = SystemClock.elapsedRealtime()
@@ -123,6 +129,28 @@ class AppLiveRatesDataSource @Inject constructor(
         job?.cancel()
         job = null
         trafficStateManager.updateAppLiveRates(emptyMap())
+    }
+
+    /** Snapshot for the in-app diagnostics popup (long-press the LIVE NOW header). */
+    fun diagnostics(): LiveRatesDiagnostics {
+        val uids = allTrafficUids()
+        var good = 0
+        var bad = 0
+        for (uid in uids) {
+            val rx = TrafficStats.getUidRxBytes(uid)
+            val tx = TrafficStats.getUidTxBytes(uid)
+            if (rx >= 0L && tx >= 0L) good++ else bad++
+        }
+        return LiveRatesDiagnostics(
+            strategy = when (activeMode) {
+                MODE_UID_COUNTERS -> LiveRatesStrategy.UID_COUNTERS
+                MODE_NETWORK_STATS -> LiveRatesStrategy.NETWORK_STATS
+                else -> LiveRatesStrategy.LAUNCHER_ONLY
+            },
+            usageAccess = hasNetworkStatsAccess(),
+            uidCountersReadable = good,
+            uidCountersUnsupported = bad
+        )
     }
 
     private fun hasNetworkStatsAccess(): Boolean =
