@@ -30,6 +30,9 @@ class InstalledAppsProviderImpl @Inject constructor(
     @Volatile
     private var cache: CacheEntry? = null
 
+    @Volatile
+    private var allAppsCache: CacheEntry? = null
+
     private val lock = Any()
 
     private val uidCacheLock = Any()
@@ -57,6 +60,31 @@ class InstalledAppsProviderImpl @Inject constructor(
             uidCache[uid] = resolved
         }
         return resolved
+    }
+
+    override fun allApps(): Map<Int, InstalledAppInfo> {
+        val now = SystemClock.elapsedRealtime()
+        allAppsCache?.let { if (now - it.timestamp < CACHE_TTL_MS) return it.apps }
+        synchronized(lock) {
+            allAppsCache?.let { if (now - it.timestamp < CACHE_TTL_MS) return it.apps }
+            val fresh = queryAllApps()
+            allAppsCache = CacheEntry(now, fresh)
+            return fresh
+        }
+    }
+
+    private fun queryAllApps(): Map<Int, InstalledAppInfo> {
+        val pm = context.packageManager
+        val result = LinkedHashMap<Int, InstalledAppInfo>()
+
+        @Suppress("DEPRECATION")
+        for (app in pm.getInstalledApplications(0)) {
+            val label = runCatching { app.loadLabel(pm).toString().trim() }
+                .getOrNull()
+                ?.takeIf { it.isNotBlank() }
+            result.putIfAbsent(app.uid, InstalledAppInfo(app.packageName, label ?: app.packageName))
+        }
+        return result
     }
 
     private fun queryLauncherApps(): Map<Int, InstalledAppInfo> {

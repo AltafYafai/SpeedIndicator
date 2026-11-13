@@ -12,6 +12,13 @@ interface InstalledAppsProvider {
     fun launcherApps(): Map<Int, InstalledAppInfo>
 
     /**
+     * All installed applications keyed by UID (cached). Used by the live
+     * rates poller so non-launcher apps are also accounted, and so per-app
+     * rates can be derived from the same counters as the device total.
+     */
+    fun allApps(): Map<Int, InstalledAppInfo>
+
+    /**
      * Resolve any UID — including non-launcher apps, shared/system UIDs —
      * to display info. Returns null when the UID cannot be attributed to
      * anything the user would recognize.

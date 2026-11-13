@@ -10,5 +10,7 @@ class FakeInstalledAppsProvider : InstalledAppsProvider {
 
     override fun launcherApps(): Map<Int, InstalledAppInfo> = apps
 
+    override fun allApps(): Map<Int, InstalledAppInfo> = apps
+
     override fun appInfoForUid(uid: Int): InstalledAppInfo? = apps[uid]
 }
