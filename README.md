@@ -73,7 +73,7 @@ data, domain, and UI packages.
 │   ├── assets/                         # README banner and screenshots
 │   ├── badges/                         # Generated APK download badge data
 │   ├── scripts/                        # Build, release, badge, and cleanup scripts
-│   └── workflows/                      # Debug, release, badge, and cleanup workflows
+│   └── workflows/                      # Release, badge, and cleanup workflows
 ├── app/
 │   ├── build.gradle.kts
 │   └── src/

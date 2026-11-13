@@ -39,6 +39,9 @@ jobs:
       - name: Validate release version
         run: python3 .github/scripts/release.py validate "${{ inputs.version }}"
 
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
       - name: Build release APK
         env:
           ANDROID_KEYSTORE_FILE: ${{ secrets.ANDROID_KEYSTORE_FILE }}
