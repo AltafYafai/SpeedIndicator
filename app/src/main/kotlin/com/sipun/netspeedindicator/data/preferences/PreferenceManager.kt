@@ -9,14 +9,11 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -87,17 +84,14 @@ class PreferenceManager @Inject constructor(
         preferences.map { it[USAGE_ALERT_BUDGET_MB] ?: DEFAULT_USAGE_ALERT_BUDGET_MB }
     val usageAlertLastNotified: Flow<String?> = preferences.map { it[USAGE_ALERT_LAST_NOTIFIED] }
 
-    private val scope = CoroutineScope(SupervisorJob() + ioDispatcher)
-
     @Volatile
     private var monitoringEnabledValue = initialMonitoringEnabled
 
-    init {
-        scope.launch {
-            monitoringEnabled.collect { monitoringEnabledValue = it }
-        }
-    }
-
+    /**
+     * [monitoringEnabledValue] is written synchronously by [setMonitoringEnabled],
+     * the only writer — collecting the DataStore flow here could clobber the
+     * latest synchronous write with the stale pre-edit value.
+     */
     fun isMonitoringEnabled(): Boolean = monitoringEnabledValue
 
     suspend fun setAppTheme(theme: Int) = update { it[APP_THEME] = theme }
