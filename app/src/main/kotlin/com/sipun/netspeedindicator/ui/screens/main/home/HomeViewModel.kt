@@ -42,6 +42,13 @@ class HomeViewModel @Inject constructor(
 
     private val liveAppsHolder = LiveAppsHolder()
 
+    private val liveAppsTicker = flow {
+        while (kotlinx.coroutines.currentCoroutineContext().isActive) {
+            emit(Unit)
+            delay(1_000)
+        }
+    }
+
     private val _showStopDialog = MutableStateFlow(false)
     private val _speedHistory = MutableStateFlow<List<Long>>(emptyList())
 
@@ -53,8 +60,9 @@ class HomeViewModel @Inject constructor(
      */
     private val activeApps = combine(
         trafficStateManager.appLiveRates,
-        trafficStateManager.isServiceRunning
-    ) { rates, isRunning ->
+        trafficStateManager.isServiceRunning,
+        liveAppsTicker
+    ) { rates, isRunning, _ ->
         if (!isRunning) {
             liveAppsHolder.clear()
         } else {
